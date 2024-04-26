@@ -8,7 +8,7 @@ const QuestionPart = ({ question, index }) => {
       <div className="flex gap-2 mb-3">
         Question: {index + 1}
         <span className="px-2 py-1 bg-gray-700 text-white text-xs rounded-md">
-          {question.category}
+          {decodeHTMLEntities(question.category)}
         </span>
         <span
           className={`px-2 py-1 ${difficultyColor(
