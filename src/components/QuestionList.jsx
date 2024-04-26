@@ -125,7 +125,7 @@ const QuestionList = ({ data, loading, onAnswerStarted, onCheckAnswered }) => {
                     </div>
                   )}
                   {getAnswerByIndex(index) === question.correct_answer && (
-                    <div className="w-full p-3 bg-green-400 text-white mt-2 rounded font-bold">
+                    <div className="w-full p-3 bg-green-500 text-white mt-2 rounded font-bold">
                       Correct
                     </div>
                   )}

@@ -36,21 +36,19 @@ export default function App() {
     }, 5000); // 5000 milliseconds = 5 seconds
   };
 
-  const handleAmountChange = (event) => {
-    const inputAmount = handleAmountLimit(event.target.value);
-    setAmount(inputAmount);
-  };
-
   return (
     <div>
-      <div className="bg-gray-500 p-2 flex gap-2 flex-wrap w-full">
-        <input
-          type="number"
+      <div className="bg-gray-500 p-2 flex gap-2 flex-wrap w-full items-center">
+        <select
           value={amount}
-          onChange={handleAmountChange}
-          max="50"
-        />
-
+          onChange={(event) => setAmount(event.target.value)}
+        >
+          {[...Array(50).keys()].map((num) => (
+            <option key={num + 1} value={num + 1}>
+              {num + 1}
+            </option>
+          ))}
+        </select>
         <select
           value={selectedCategory}
           onChange={(event) => setSelectedCategory(event.target.value)}
@@ -62,7 +60,6 @@ export default function App() {
             </option>
           ))}
         </select>
-
         <select
           value={difficulty}
           onChange={(event) => setDifficulty(event.target.value)}
@@ -72,13 +69,11 @@ export default function App() {
           <option value="medium">Medium</option>
           <option value="hard">Hard</option>
         </select>
-
         <select value={type} onChange={(event) => setType(event.target.value)}>
           <option value="">Any Type</option>
           <option value="multiple">Multiple Choice</option>
           <option value="boolean">True/False</option>
         </select>
-
         <button
           className={`px-3 py-1 ${
             clickable
