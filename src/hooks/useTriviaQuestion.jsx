@@ -6,6 +6,7 @@ const useTriviaQuestion = (query) => {
 
   const fetchData = async () => {
     const response = await fetchQuestion(query);
+    console.log("FetchData: " + response);
     setData(response);
   };
   return {

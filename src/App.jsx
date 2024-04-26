@@ -19,8 +19,10 @@ export default function App() {
     type
   );
   const { data, fetchData } = useTriviaQuestion(generateQueryString);
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-  fetchData();
   const handleGenerate = () => {
     setLoading(true);
     const query = generateQueryString;
@@ -79,8 +81,11 @@ export default function App() {
           Generate
         </button>
       </div>
-
-      <QuestionList data={data} loading={loading} />
+      {data === 5 ? (
+        <h1>Error Fetching Data</h1>
+      ) : (
+        <QuestionList data={data} loading={loading} />
+      )}
     </div>
   );
 }

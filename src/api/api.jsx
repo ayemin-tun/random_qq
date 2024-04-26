@@ -15,7 +15,7 @@ export const fetchQuestion = async (query) => {
     const response = await axios.get(`/api.php?${query}`);
     return response.data.results;
   } catch (error) {
-    console.log(error.response);
-    return error.response.status;
+    console.log(error.response.data.response_code);
+    return error.response.data.response_code;
   }
 };
