@@ -67,7 +67,7 @@ const QuestionList = ({ data, loading }) => {
 
   return (
     <div className="mt-4 flex flex-col justify-center p-3">
-      {data.length === 0 && <h1>Please click generate to start ...</h1>}
+      {data.length === 0 && <h1>Loading ...</h1>}
 
       <ul>
         {data.map((question, index) => {
@@ -119,13 +119,14 @@ const QuestionList = ({ data, loading }) => {
           );
         })}
       </ul>
-
-      <button
-        className="px-3 py-1 bg-gray-800 text-white"
-        onClick={handleCheckAnswers}
-      >
-        Check Answers
-      </button>
+      {data.length != 0 && (
+        <button
+          className="px-3 py-1 bg-gray-800 text-white"
+          onClick={handleCheckAnswers}
+        >
+          Check Answers
+        </button>
+      )}
     </div>
   );
 };
