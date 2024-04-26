@@ -1,59 +1,131 @@
-import React, { memo } from "react";
-import { decodeHTMLEntities, difficultyColor } from "../utils/utils";
+import React, { memo, useEffect, useMemo, useState } from "react";
+import {
+  decodeHTMLEntities,
+  difficultyColor,
+  shuffleArray,
+} from "../utils/utils";
+import QuestionPart from "./QuestionPart";
 
 const QuestionList = ({ data, loading }) => {
-  console.log("QuestionList Render");
+  const [selectedAnswers, setSelectedAnswers] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+  useEffect(() => {
+    setSelectedAnswers([]);
+    setShowResults(false);
+  }, [data]);
 
-  const shuffleArray = (array) => {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+  const handleAnswerSelection = (index, answer) => {
+    //Check if an answer for this question index already exists in selectedAnswers
+    const existingAnswerIndex = selectedAnswers.findIndex(
+      (item) => item.index === index
+    );
+
+    if (existingAnswerIndex !== -1) {
+      // If an answer exists for this index, update the answer
+      const updatedAnswers = [...selectedAnswers];
+      updatedAnswers[existingAnswerIndex].answer = answer;
+      setSelectedAnswers(updatedAnswers);
+    } else {
+      // If no answer exists for this index, add a new answer entry
+      setSelectedAnswers((prev) => [
+        ...prev,
+        {
+          index: index,
+          answer: answer,
+        },
+      ]);
     }
-    return array;
+  };
+
+  const shuffleAnswerLists = useMemo(() => {
+    return data.map((question) => {
+      const allAnswers = [
+        question.correct_answer,
+        ...question.incorrect_answers,
+      ];
+      return shuffleArray(allAnswers);
+    });
+  }, [data]);
+
+  const handleCheckAnswers = () => {
+    if (selectedAnswers.length === data.length) {
+      setShowResults(true);
+      console.log(selectedAnswers);
+    } else {
+      alert(
+        "Please answer all question before check answer " +
+          (data.length - selectedAnswers.length) +
+          " answers required"
+      );
+    }
+  };
+
+  const getAnswerByIndex = (index) => {
+    const answerObject = selectedAnswers.find((item) => item.index === index);
+    return answerObject ? answerObject.answer : null;
   };
 
   return (
     <div className="mt-4 flex flex-col justify-center p-3">
       {data.length === 0 && <h1>Please click generate to start ...</h1>}
+
       <ul>
         {data.map((question, index) => {
-          // Combine correct and incorrect answers into a single array
-          const allAnswers = [
-            question.correct_answer,
-            ...question.incorrect_answers,
-          ];
-          // Shuffle the combined answers array
-          const shuffledAnswers = shuffleArray(allAnswers);
-
+          const shuffledAnswers = shuffleAnswerLists[index];
+          const selectedAnswer = getAnswerByIndex(index);
           return (
             <li key={index} className="w-full p-4 border shadow mb-2">
-              <div className="flex gap-2 mb-3">
-                Question: {index + 1}
-                <span className="px-2 py-1 bg-gray-700 text-white text-xs rounded-md">
-                  {question.category}
-                </span>
-                <span
-                  className={`px-2 py-1 ${difficultyColor(
-                    question.difficulty
-                  )} text-white text-xs rounded-md`}
-                >
-                  {question.difficulty}
-                </span>
-              </div>
-              <p className="font-semibold text-lg">
-                {decodeHTMLEntities(question.question)}
-              </p>
+              <QuestionPart question={question} index={index} />
 
               {/* Display shuffled answers */}
               <ul>
                 {shuffledAnswers.map((answer, answerIndex) => (
-                  <li key={answerIndex}>{decodeHTMLEntities(answer)}</li>
+                  <li key={answerIndex} className="flex gap-2">
+                    <input
+                      className="cursor-pointer"
+                      type="radio"
+                      name={`question-${index}`}
+                      value={answer}
+                      onChange={() => handleAnswerSelection(index, answer)}
+                      checked={selectedAnswer === answer}
+                    />
+                    {decodeHTMLEntities(answer)}
+                    {/* {answer === question.correct_answer ? (
+                      <span className="font-extrabold">
+                        {decodeHTMLEntities(answer)}
+                      </span>
+                    ) : (
+                      <i>{decodeHTMLEntities(answer)}</i>
+                    )} */}
+                  </li>
                 ))}
               </ul>
+
+              {showResults && (
+                <>
+                  {getAnswerByIndex(index) != question.correct_answer && (
+                    <div className="w-full p-3 bg-red-400 text-white mt-2 rounded font-bold">
+                      Not Correct - "Correct Answer: {question.correct_answer}"
+                    </div>
+                  )}
+                  {getAnswerByIndex(index) === question.correct_answer && (
+                    <div className="w-full p-3 bg-green-400 text-white mt-2 rounded font-bold">
+                      Correct
+                    </div>
+                  )}
+                </>
+              )}
             </li>
           );
         })}
       </ul>
+
+      <button
+        className="px-3 py-1 bg-gray-800 text-white"
+        onClick={handleCheckAnswers}
+      >
+        Check Answers
+      </button>
     </div>
   );
 };

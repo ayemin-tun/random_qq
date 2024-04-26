@@ -1,44 +1,37 @@
-import React, { useState, useEffect } from "react";
-import useTriviaCategories from "./hooks/useTriviaCategories";
-import useTriviaQuestion from "./hooks/useTriviaQuestion";
-import { generateQuery, handleAmountLimit } from "./utils/utils";
-import QuestionList from "./components/QuestionList";
+import React, { useState } from "react";
+import useTriviaCategories from "../hooks/useTriviaCategories";
+import { generateQuery } from "../utils/utils";
 
-export default function App() {
+const FilterQuestion = ({ fetchData }) => {
   const categories = useTriviaCategories();
 
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [amount, setAmount] = useState(10);
+  const [amount, setAmount] = useState(10); // Default amount set to 10
   const [difficulty, setDifficulty] = useState("");
   const [type, setType] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const generateQueryString = generateQuery(
-    amount,
-    selectedCategory,
-    difficulty,
-    type
-  );
-  const { data, fetchData } = useTriviaQuestion(generateQueryString);
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const handleGenerate = () => {
-    setLoading(true);
-    const query = generateQueryString;
-    fetchData(query);
-    setLoading(false);
+    const query = generateQueryString(); // Call generateQueryString to get the current query
+    fetchData(query); // Call fetchData with the generated query
   };
 
   const handleAmountChange = (event) => {
-    const inputAmount = handleAmountLimit(event.target.value);
-    setAmount(inputAmount);
+    const inputAmount = parseInt(event.target.value);
+    if (inputAmount <= 50) {
+      setAmount(inputAmount);
+    } else {
+      alert("Please enter a number between 1 and 50.");
+      setAmount(10);
+    }
+  };
+
+  const generateQueryString = () => {
+    return generateQuery(amount, selectedCategory, difficulty, type);
   };
 
   return (
     <div>
-      <div className="bg-gray-500 p-2 flex gap-2 flex-wrap w-full">
+      <div className="bg-gray-500 p-2 flex gap-2">
         <input
           type="number"
           value={amount}
@@ -74,21 +67,16 @@ export default function App() {
           <option value="multiple">Multiple Choice</option>
           <option value="boolean">True/False</option>
         </select>
-
-        <button
-          className="px-3 py-1 bg-gray-700 text-white"
-          onClick={handleGenerate}
-        >
-          Generate
-        </button>
       </div>
-      {data === 5 ? (
-        <h1 className="p-3 font-bold">
-          Too Many Generate.Please wait a second and click generate again
-        </h1>
-      ) : (
-        <QuestionList data={data} loading={loading} />
-      )}
+
+      <button
+        className="px-3 py-1 bg-gray-700 text-white"
+        onClick={handleGenerate}
+      >
+        Generate
+      </button>
     </div>
   );
-}
+};
+
+export default FilterQuestion;
