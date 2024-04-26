@@ -12,6 +12,7 @@ export default function App() {
   const [difficulty, setDifficulty] = useState("");
   const [type, setType] = useState("");
   const [loading, setLoading] = useState(false);
+  const [clickable, setClickable] = useState(true);
 
   const generateQueryString = generateQuery(
     amount,
@@ -19,16 +20,20 @@ export default function App() {
     difficulty,
     type
   );
+
   const { data, fetchData } = useTriviaQuestion(generateQueryString);
+
   useEffect(() => {
     fetchData();
   }, []);
 
   const handleGenerate = () => {
-    setLoading(true);
-    const query = generateQueryString;
-    fetchData(query);
-    setLoading(false);
+    fetchData(generateQueryString);
+    setClickable(false);
+
+    setTimeout(() => {
+      setClickable(true); // Enable the button after 5 seconds
+    }, 5000); // 5000 milliseconds = 5 seconds
   };
 
   const handleAmountChange = (event) => {
@@ -43,7 +48,6 @@ export default function App() {
           type="number"
           value={amount}
           onChange={handleAmountChange}
-          min="1"
           max="50"
         />
 
@@ -76,18 +80,29 @@ export default function App() {
         </select>
 
         <button
-          className="px-3 py-1 bg-gray-700 text-white"
+          className={`px-3 py-1 ${
+            clickable
+              ? " bg-gray-700 text-white"
+              : "bg-gray-600 text-white cursor-not-allowed"
+          }`}
           onClick={handleGenerate}
+          disabled={!clickable}
         >
-          Generate
+          {clickable ? "Generate" : "Wait ..."}
         </button>
       </div>
+
       {data === 5 ? (
         <h1 className="p-3 font-bold">
           Too Many Generate.Please wait a second and click generate again
         </h1>
       ) : (
-        <QuestionList data={data} loading={loading} />
+        <QuestionList
+          data={data}
+          loading={loading}
+          onAnswerStarted={() => setClickable(false)}
+          onCheckAnswered={() => setClickable(true)}
+        />
       )}
     </div>
   );

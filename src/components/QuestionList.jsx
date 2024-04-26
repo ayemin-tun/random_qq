@@ -1,17 +1,16 @@
 import React, { memo, useEffect, useMemo, useState } from "react";
-import {
-  decodeHTMLEntities,
-  difficultyColor,
-  shuffleArray,
-} from "../utils/utils";
+import { decodeHTMLEntities, shuffleArray } from "../utils/utils";
 import QuestionPart from "./QuestionPart";
 
-const QuestionList = ({ data, loading }) => {
+const QuestionList = ({ data, loading, onAnswerStarted, onCheckAnswered }) => {
   const [selectedAnswers, setSelectedAnswers] = useState([]);
   const [showResults, setShowResults] = useState(false);
+  const [correctAnswersCount, setCorrectAnswersCount] = useState(null);
+
   useEffect(() => {
     setSelectedAnswers([]);
     setShowResults(false);
+    setCorrectAnswersCount(0);
   }, [data]);
 
   const handleAnswerSelection = (index, answer) => {
@@ -35,9 +34,11 @@ const QuestionList = ({ data, loading }) => {
         },
       ]);
     }
+    onAnswerStarted();
   };
 
   const shuffleAnswerLists = useMemo(() => {
+    //if we dont use memo the answer is random oreder when every render
     return data.map((question) => {
       const allAnswers = [
         question.correct_answer,
@@ -49,8 +50,14 @@ const QuestionList = ({ data, loading }) => {
 
   const handleCheckAnswers = () => {
     if (selectedAnswers.length === data.length) {
+      setCorrectAnswersCount(0);
+      let correctCount = 0;
+      data.map((data, index) => {
+        if (data.correct_answer === getAnswerByIndex(index)) correctCount++;
+      });
+      setCorrectAnswersCount(correctCount);
       setShowResults(true);
-      console.log(selectedAnswers);
+      onCheckAnswered();
     } else {
       alert(
         "Please answer all question before check answer " +
@@ -68,7 +75,15 @@ const QuestionList = ({ data, loading }) => {
   return (
     <div className="mt-4 flex flex-col justify-center p-3">
       {data.length === 0 && <h1>Loading ...</h1>}
-
+      {correctAnswersCount > 0 && (
+        <span
+          className={`${
+            correctAnswersCount < 3 ? "bg-green-500" : "bg-green-300"
+          }  text-white p-3 m-2 border`}
+        >
+          {correctAnswersCount}/{data.length} Correct
+        </span>
+      )}
       <ul>
         {data.map((question, index) => {
           const shuffledAnswers = shuffleAnswerLists[index];
@@ -105,7 +120,8 @@ const QuestionList = ({ data, loading }) => {
                 <>
                   {getAnswerByIndex(index) != question.correct_answer && (
                     <div className="w-full p-3 bg-red-400 text-white mt-2 rounded font-bold">
-                      Not Correct - "Correct Answer: {question.correct_answer}"
+                      Not Correct - "Correct Answer:{" "}
+                      {decodeHTMLEntities(question.correct_answer)}"
                     </div>
                   )}
                   {getAnswerByIndex(index) === question.correct_answer && (
